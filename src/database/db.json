@@ -1,0 +1,17 @@
+{
+  "posts": [
+    {
+      "authorId": "0",
+      "id": "1",
+      "title": "Titulo do post",
+      "text": "Texto do post"
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "password": "$2b$10$dXgMkdB.SWP6XABVkfICruwxShyeowNgJ.sKd19PWII1Ff8nIGkHa",
+      "id": "93c5ddfd-cdc7-42ee-900a-911b2a23737f"
+    }
+  ]
+}

@@ -2,6 +2,8 @@
 
 const router = require('express').Router();
 const { db } = require('../database');
+const isAuthenticated = require('../auth').isAuthenticated;
+const uuid = require('uuid').v4;
 
 router.get('/post', listPosts);
 async function listPosts(req, res) {
@@ -25,16 +27,18 @@ async function getPost(req, res) {
         res.status(200).send(responseData[0]);
 }
 
-router.delete('/post/:id', deletePost);
+router.delete('/post/:id', isAuthenticated, deletePost);
 async function deletePost(req, res) {
-    let hasPost = db
+    let post = db
         .get('posts')
         .filter(req.params)
-        .value()
-        .length > 0;
+        .value();
 
-    if (!hasPost)
+    if (post.length === 0) {
         res.status(404).send();
+    } else if (post[0].authorId !== req.user.id) {
+        res.status(401).send();
+    }
     else {
         db.get('posts')
             .remove(req.params)
@@ -44,19 +48,28 @@ async function deletePost(req, res) {
     }
 }
 
-router.post('/post', createPost);
+router.post('/post', isAuthenticated, createPost);
 async function createPost(req, res) {
     let post = req.body;
+    post.authorId = req.user.id;
+    post.id = uuid();
 
     db.get('posts')
         .push(post)
         .write();
 
-    res.status(200).send();
+    res.status(200).send(post);
 }
 
-router.put('/post', updatePost);
+router.patch('/post', isAuthenticated, updatePost);
 async function updatePost(req, res) {
+    let post = db.get('posts')
+        .find({ id: req.body.id })
+        .value();
+
+    if (post == null || post.authorId !== req.user.id)
+        return res.status(401).send();
+
     db.get('posts')
         .find({ id: req.body.id })
         .assign(req.body)

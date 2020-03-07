@@ -7,8 +7,7 @@ const uuid = require('uuid').v4;
 
 router.get('/post', listPosts);
 async function listPosts(req, res) {
-    let responseData = db
-        .get('posts')
+    let responseData = db.get('posts')
         .filter(req.query)
         .value();
 
@@ -18,25 +17,24 @@ async function listPosts(req, res) {
 router.get('/post/:id', getPost);
 async function getPost(req, res) {
     let responseData = db.get('posts')
-        .filter(req.params)
+        .find(req.params)
         .value();
 
-    if (responseData.length === 0)
+    if (responseData == null)
         res.status(404).send();
     else
-        res.status(200).send(responseData[0]);
+        res.status(200).send(responseData);
 }
 
 router.delete('/post/:id', isAuthenticated, deletePost);
 async function deletePost(req, res) {
-    let post = db
-        .get('posts')
-        .filter(req.params)
+    let post = db.get('posts')
+        .find(req.params)
         .value();
 
-    if (post.length === 0) {
+    if (post == null) {
         res.status(404).send();
-    } else if (post[0].authorId !== req.user.id) {
+    } else if (post.authorId !== req.user.id) {
         res.status(401).send();
     }
     else {

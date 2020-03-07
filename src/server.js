@@ -25,7 +25,6 @@ passport.serializeUser(serializeUser);
 passport.deserializeUser(deserializeUser);
 
 app.use('/', require('./controllers/posts.controller'));
-app.use('/', require('./controllers/user.controller'));
 app.use('/', require('./controllers/auth.controller'));
 
 

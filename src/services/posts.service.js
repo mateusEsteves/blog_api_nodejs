@@ -49,6 +49,8 @@ function updatePost(postData) {
         .find({ id: postData.id })
         .assign(newPost)
         .write();
+
+    return postData;
 }
 
 

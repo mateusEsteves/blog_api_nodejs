@@ -1,79 +1,44 @@
 'use strict';
 
 const router = require('express').Router();
-const { db } = require('../database');
-const isAuthenticated = require('../auth').isAuthenticated;
-const uuid = require('uuid').v4;
+const { isAuthenticated } = require('../auth');
+const { PostsService } = require('../services');
 
-router.get('/post', listPosts);
-async function listPosts(req, res) {
-    let responseData = db.get('posts')
-        .filter(req.query)
-        .value();
-
+router.get('/post', (req, res) => {
+    let responseData = PostsService.getAll(req.query);
     res.send(responseData);
-}
+});
 
-router.get('/post/:id', getPost);
-async function getPost(req, res) {
-    let responseData = db.get('posts')
-        .find(req.params)
-        .value();
+router.get('/post/:id', (req, res) => {
+    let responseData = PostsService.getById(req.params.id);
 
     if (responseData == null)
         res.status(404).send();
     else
         res.status(200).send(responseData);
-}
+});
 
-router.delete('/post/:id', isAuthenticated, deletePost);
-async function deletePost(req, res) {
-    let post = db.get('posts')
-        .find(req.params)
-        .value();
-
-    if (post == null) {
-        res.status(404).send();
-    } else if (post.authorId !== req.user.id) {
+router.delete('/post/:id', isAuthenticated, (req, res) => {
+    if (!PostsService.isPostAuthoredBy(req.params.id, req.user.id)) {
         res.status(401).send();
     }
     else {
-        db.get('posts')
-            .remove(req.params)
-            .write();
-
+        PostsService.deleteById(req.params.id);
         res.status(200).send();
     }
-}
+});
 
-router.post('/post', isAuthenticated, createPost);
-async function createPost(req, res) {
-    let post = req.body;
-    post.authorId = req.user.id;
-    post.id = uuid();
+router.post('/post', isAuthenticated, (req, res) => {
+    let result = PostsService.createPost(req.body, req.user.id);
+    res.status(200).send(result);
+});
 
-    db.get('posts')
-        .push(post)
-        .write();
-
-    res.status(200).send(post);
-}
-
-router.patch('/post', isAuthenticated, updatePost);
-async function updatePost(req, res) {
-    let post = db.get('posts')
-        .find({ id: req.body.id })
-        .value();
-
-    if (post == null || post.authorId !== req.user.id)
+router.patch('/post', isAuthenticated, (req, res) => {
+    if (!PostsService.isPostAuthoredBy(req.body.id, req.user.id))
         return res.status(401).send();
 
-    db.get('posts')
-        .find({ id: req.body.id })
-        .assign(req.body)
-        .write();
-
-    res.status(200).send();
-}
+    let result = PostsService.updatePost(req.body);
+    res.status(200).send(result);
+});
 
 module.exports = router;

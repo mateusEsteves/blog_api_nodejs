@@ -5,7 +5,7 @@ const passport = require('passport');
 
 router.post('/login', passport.authenticate('local'), login);
 function login(req, res) {
-    let user = req.user;
+    let user = Object.assign({}, req.user);
     user.password = undefined;
     res.status(200).send(user);
 }

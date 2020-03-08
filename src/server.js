@@ -5,6 +5,7 @@ const app = express();
 const startup = require('./startup');
 
 app.use(express.json());
+startup.configureCors(app);
 startup.configureSession(app);
 startup.configurePassport(app);
 startup.configureRoutes(app);
